@@ -98,7 +98,7 @@ class TRP_Langbly_Machine_Translator extends TRP_Machine_Translator {
 				'headers' => array(
 					'Content-Type' => 'application/json',
 					'X-API-Key'    => $this->get_api_key(),
-					'User-Agent'   => 'langbly-translatepress/1.0.0',
+					'User-Agent'   => 'langbly-translatepress/1.0.3',
 					'Referer'      => $this->get_referer(),
 				),
 				'body'    => wp_json_encode( $body ),
@@ -123,16 +123,12 @@ class TRP_Langbly_Machine_Translator extends TRP_Machine_Translator {
 		}
 
 		if ( ! $this->verify_request_parameters( $target_language_code, $source_language_code ) ) {
-			return $new_strings;
+			return array();
 		}
 
 		// Map WordPress locale codes to ISO language codes.
-		$source_lang = $this->map_language_code( $source_language_code );
-		$target_lang = $this->map_language_code( $target_language_code );
-
-		// Apply TranslatePress language filters.
-		$source_lang = apply_filters( 'trp_langbly_source_language', $source_lang, $source_language_code, $target_language_code );
-		$target_lang = apply_filters( 'trp_langbly_target_language', $target_lang, $target_language_code, $source_language_code );
+		$source_lang = $this->machine_translation_codes[ $source_language_code ];
+		$target_lang = $this->machine_translation_codes[ $target_language_code ];
 
 		$translated_strings = array();
 
@@ -188,8 +184,7 @@ class TRP_Langbly_Machine_Translator extends TRP_Machine_Translator {
 			}
 		}
 
-		// Merge: use translations where available, keep originals otherwise.
-		return array_merge( $new_strings, $translated_strings );
+		return $translated_strings;
 	}
 
 	/**
@@ -279,44 +274,6 @@ class TRP_Langbly_Machine_Translator extends TRP_Machine_Translator {
 	 */
 	public function get_engine_specific_language_codes( $languages ) {
 		return $this->trp_languages->get_iso_codes( $languages );
-	}
-
-	/**
-	 * Map a WordPress locale code to an ISO 639-1 language code.
-	 *
-	 * Handles TranslatePress locale formats (en_US, zh_CN, pt_BR, etc.)
-	 * and converts them to codes the Langbly API expects.
-	 *
-	 * @param string $locale WordPress locale code.
-	 * @return string ISO 639-1 language code.
-	 */
-	private function map_language_code( $locale ) {
-		// Check if we have machine_translation_codes from TranslatePress.
-		if ( isset( $this->machine_translation_codes[ $locale ] ) ) {
-			$code = $this->machine_translation_codes[ $locale ];
-			if ( ! empty( $code ) ) {
-				return $code;
-			}
-		}
-
-		// Special cases.
-		$special_map = array(
-			'zh_CN' => 'zh',
-			'zh_TW' => 'zh-TW',
-			'zh_HK' => 'zh-TW',
-			'pt_BR' => 'pt',
-			'pt_PT' => 'pt',
-			'nb_NO' => 'no',
-			'nn_NO' => 'no',
-		);
-
-		if ( isset( $special_map[ $locale ] ) ) {
-			return $special_map[ $locale ];
-		}
-
-		// Default: extract primary language subtag (first 2 chars before _ or -).
-		$parts = preg_split( '/[_-]/', $locale );
-		return strtolower( $parts[0] );
 	}
 
 	/**
