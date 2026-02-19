@@ -3,7 +3,7 @@ Contributors: langbly
 Tags: translation, translatepress, machine-translation, ai, multilingual
 Requires at least: 5.6
 Tested up to: 6.7
-Stable tag: 1.0.0
+Stable tag: 1.0.3
 Requires PHP: 7.4
 License: GPL-2.0-or-later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
@@ -81,6 +81,18 @@ Absolutely. Just change the translation engine in TranslatePress settings from G
 
 == Changelog ==
 
+= 1.0.3 =
+* Fix engine loading race condition: register filters at file load time instead of plugins_loaded
+* Use TranslatePress built-in machine_translation_codes instead of custom mapping
+* Return empty array on verification failure (TranslatePress convention)
+* Add fallback selector for engine dropdown toggle
+
+= 1.0.2 =
+* Minor stability improvements
+
+= 1.0.1 =
+* Version bump, internal improvements
+
 = 1.0.0 =
 * Initial release
 * Full TranslatePress engine integration
@@ -91,5 +103,5 @@ Absolutely. Just change the translation engine in TranslatePress settings from G
 
 == Upgrade Notice ==
 
-= 1.0.0 =
-Initial release of Langbly for TranslatePress.
+= 1.0.3 =
+Fixes a race condition where Langbly could fail to appear as a translation engine. Recommended update.
